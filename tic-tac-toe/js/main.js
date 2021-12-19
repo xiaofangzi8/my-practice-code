@@ -1,68 +1,65 @@
 window.onload = function(){
     let gameBoard = ['','','','','','','','',''];
     let currentTrun = 0;
-    let winner = false;
+    let winner = '';
+    let stepFlag = false;
+    let newCurrentTurn= 0;
 
     createBoard();
 
     function createBoard(){
-        let replayButton = document.querySelector('.replay-btn');
-        replayButton.addEventListener('click', resetBoard);
-    
-        reSize();
+        resetBordClick();
         addCellClick();
         changeBoardHeaderNames();
     }
-    
-    function reSize(){
-        let allCells = document.querySelectorAll('.board-cell');
-        let cellHeight = allCells[0].offsetWidth;
-        
-        allCells.forEach( cell => {
-          cell.style.height = `${cellHeight}px`;
-        });
+
+    jumpTo = function(arrstr,turn){
+      clearInfo();
+      const tuenText = turn % 2 === 0 ? 'X' : 'O';
+      curTurnText('Next player:'+ tuenText);
+
+      let arr = arrstr.split(",");
+      arr.forEach((item,index) => {
+        cellText(index,item);
+      });
+
+      stepFlag = true;
+      newCurrentTurn = parseInt(turn);
+      gameBoard = arr;
     }
     
     function  cellMove(event){
         let currentCell = parseInt(event.currentTarget.firstElementChild.dataset.id);
-        let currentCellId = document.querySelector(`[data-id='${currentCell}']`);
-        if(currentCellId.innerHTML !== ''){
-            return ;
-        }else if(curentPlayer() === 'X'){
-            currentCellId.innerHTML = curentPlayer();
-            gameBoard[currentCell] = 'X';
-        }else{
-            currentCellId.innerHTML = curentPlayer();
-            gameBoard[currentCell] = 'O';
+        if(winner || gameBoard[currentCell]) return;
+
+        if(stepFlag){
+          currentTrun = newCurrentTurn;
+          deleteLiChild(newCurrentTurn);
         }
-    
-        calculateWinner();
-    
+
         
+
+        const curPlayer = curentPlayer();
+        cellText(currentCell,curPlayer);
+        gameBoard[currentCell] = curPlayer;
+
+        const history = gameBoard.slice();
+        let olList = document.querySelector('.step-info');
+        let li = document.createElement('li');
+        const stepNum = currentTrun + 1;
+        li.innerHTML = "<button  onClick=\'jumpTo(\""+ history +"\",\""+ stepNum + "\")\'> Go to move #"+ stepNum +"</button>";
+        olList.appendChild(li);
+
+        calculateWinner();
         changeBoardHeaderNames();
-    
         currentTrun++;
-    }
-    
-    function curentPlayer(){
-        return currentTrun % 2 === 0 ? 'X' : 'O';
-    }
-    
-    function checkGameOver(){
-        if(currentTrun > 7){
-            alert('game over!');
-        }
+        
     }
     
     function changeBoardHeaderNames(){
-    
         if(!winner){
-            let currentPlayerText = document.querySelector('.board-player-turn');
-            if(curentPlayer() === 'X'){
-                currentPlayerText.innerHTML = 'Next player: X';
-            }else{
-                currentPlayerText.innerHTML = 'Next player: O';
-            }
+          const curPlayer = curentPlayer();
+          curTurnText('Next player:'+curPlayer);
         }
     }
     
@@ -78,11 +75,9 @@ window.onload = function(){
             [2, 4, 6]
           ];
           lines.forEach(lineItem => {
-            let cell1 = lineItem[0];
-            let cell2 = lineItem[1];
-            let cell3 = lineItem[2];
-    
-            if(gameBoard[cell1] === curentPlayer() &&  gameBoard[cell2] === curentPlayer() && gameBoard[cell3] === curentPlayer()){
+            let [cell1,cell2,cell3] = lineItem;
+            const curPlayer = curentPlayer();
+            if(gameBoard[cell1] === curPlayer &&  gameBoard[cell2] === curPlayer && gameBoard[cell3] === curPlayer){
                 const cells = document.querySelectorAll('.board-cell');
     
                 cells.forEach(cell => {
@@ -93,61 +88,82 @@ window.onload = function(){
                     }
                 });
     
-                let currentPlayerText = document.querySelector('.board-player-turn');
-                if(curentPlayer() === 'X'){
-                    currentPlayerText.innerHTML  = "Winner:X";
-                    winner= true;
-                    removeCellClick();
-                    return true;
-                }else{
-                    currentPlayerText.innerHTML  = "Winner:O";
-                    winner=true;
-                    removeCellClick();
-                    return true;
-                }
+                curTurnText('Winner:'+ curPlayer);
+                winner = curPlayer;
             }
           }); 
     
           if(!winner){
             checkGameOver();
           }
+    }
     
-          return false;
+    function resetBordClick(){
+      let replayButton = document.querySelector('.replay-btn');
+      replayButton.addEventListener('click', resetBoard);
     }
     
     function resetBoard() {
-    
-        gameBoard = ['', '', '', '', '', '', '', '', '']; 
-        
-        let cellsAll = document.querySelectorAll('.cell');
-        cellsAll.forEach( cell => {
-            cell.textContent = '';
-            cell.parentElement.classList.remove('board-cell-winner');
-        });
-      
-        currentTrun = 0;
-        winner = false;
-      
-        let currentPlayerText = document.querySelector('.board-player-turn');
-        currentPlayerText.innerHTML = 'Next player: X';
-      
+        clearInfo();
         addCellClick();
+        deleteLiChild(0);
       }
+
+    function clearInfo(){
+      gameBoard = ['', '', '', '', '', '', '', '', '']; 
+      
+      let cellsAll = document.querySelectorAll('.cell');
+      cellsAll.forEach( cell => {
+          cell.textContent = '';
+          cell.parentElement.classList.remove('board-cell-winner');
+      });
+
+      curTurnText('Next player:X');
     
-    
-      function addCellClick(){
-        const cells = document.querySelectorAll('.board-cell');
-        cells.forEach( cell => {
-          cell.addEventListener('click', cellMove);
-        });
+      currentTrun = 0;
+      winner = false;
+      stepFlag = false;
+    }
+
+    function curTurnText(content){
+      let currentPlayerText = document.querySelector('.board-player-turn');
+      currentPlayerText.innerHTML = content;
+    }
+
+    function cellText(index,content){
+      let currentCellId = document.querySelector(`[data-id='${index}']`);
+      currentCellId.innerHTML = content;
+    }
+
+    function addCellClick(){
+      const cells = document.querySelectorAll('.board-cell');
+      cells.forEach( cell => {
+        cell.addEventListener('click', cellMove);
+      });
+    }
+
+    function deleteLiChild (turn) {
+      let ol = document.querySelector('.step-info');
+      var child = ol.lastElementChild;
+        while (child) {
+        if(child.innerHTML.indexOf("#"+turn) != -1 ){
+          break;
+        }
+        ol.removeChild(child);
+        child = ol.lastElementChild;
+        
       }
-    
-      function removeCellClick(){
-        const cells = document.querySelectorAll('.board-cell');
-        cells.forEach( cell => {
-          cell.removeEventListener('click', cellMove);
-        });
-      } 
+    }
+
+    function curentPlayer(){
+      return currentTrun % 2 === 0 ? 'X' : 'O';
+    }
+  
+    function checkGameOver(){
+      if(currentTrun > 7){
+          alert('game over!');
+      }
+    }
 }
 
 

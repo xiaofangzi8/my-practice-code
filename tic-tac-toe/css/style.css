@@ -3,21 +3,43 @@
     padding: 0;
     box-sizing: border-box;
   }
+div{
+  display: block;
+}
 
+li{
+  margin-top: 2px;
+}
 .header{
   text-align: center;
   margin: 15px 0;
 }
 
+.board-box{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.board-info{
+ margin:70px 20px;
+ width:300px;
+}
+
+
+
 .board-player-turn {
-    text-align: center;
-    margin: 10px 0 10px;
-    height: 54px;
+    margin: 10px 0 0px 10px;
+    height: 30px;
   }
   
+  .step-info{
+    margin-left:40px ;
+  }
   
   .board-container {
-    width: 40%;
+    width: 500px;
+    height: 500px;
     background-color:lightgrey;
     margin: 0 auto;
     font-size: 0;
@@ -29,6 +51,7 @@
   
   .board-cell {
     width: calc(100% / 3);
+    height: calc(100% / 3); 
     display: inline-block;
     font-size: 40px;
     text-align: center;
