@@ -4,8 +4,8 @@
             <h1>Tic Tac Toe</h1>
         </div>
         <div class="board-container">
-            <div class="board-cell" :class="{winnerColor:isWin[item.id]}" v-for="(item) in gameboard" :key="item.id" @click="strike(item.id)" >
-                <div class="cell">{{ item.content }}</div>
+            <div class="board-cell" :class="{winnerColor:isWin[item.id]}" v-for="(item) in gameboard" :key="item.id" >
+                <div class="cell"  @click="strike(item.id)">{{ item.content }}</div>
             </div>
         </div>
         <div class="reset">
@@ -161,8 +161,9 @@ export default {
 
   .cell {
     position: relative;
-    top: 50%;
+    top: 70%;
     transform: translateY(-50%);
+    height: 100px;
   }
 
  .winnerColor {
