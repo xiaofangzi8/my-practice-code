@@ -1,42 +1,38 @@
 <template>
-    <table class="board-container">
-        <tr>
-            <base-cell name="0" :class="{winner: isWin[0]}"></base-cell>
-            <base-cell name="1" :class="{winner: isWin[1]}"></base-cell>
-            <base-cell name="2" :class="{winner: isWin[2]}"></base-cell>
-        </tr>
-        <tr>
-            <base-cell name="3" :class="{winner: isWin[3]}"></base-cell>
-            <base-cell name="4" :class="{winner: isWin[4]}"></base-cell>
-            <base-cell name="5" :class="{winner: isWin[5]}"></base-cell>
-        </tr>
-        <tr>
-            <base-cell name="6" :class="{winner: isWin[6]}"></base-cell>
-            <base-cell name="7" :class="{winner: isWin[7]}"></base-cell>
-            <base-cell name="8" :class="{winner: isWin[8]}"></base-cell>
-        </tr>
-    </table>
+    <div class="board-main">
+        <div class="header">
+            <h1>Tic Tac Toe</h1>
+        </div>
+        <div class="board-container">
+            <div class="board-cell" :class="{winnerColor:isWin[item.id]}" v-for="(item) in gameboard" :key="item.id" @click="strike(item.id)" >
+                <div class="cell">{{ item.content }}</div>
+            </div>
+        </div>
+        <div class="reset">
+            <button class="replay-btn" @click="restart">重置棋盘</button>
+        </div>
+    </div>
 </template>
 
 <script>
-import Bus from '../common/bus.js'
-import BaseCell from './BaseCell.vue'
-
 export default {
-    components:{ 
-        BaseCell
-    },
     data () {
         return {
             currentPlayer:'X',
             turnMessage:'',
             moves:0,
             winner: '',
-            gameboard:{
-                0: '', 1: '', 2: '',
-				3: '', 4: '', 5: '',
-				6: '', 7: '', 8: ''
-            },
+            gameboard:[
+                {id:0,content:''},
+                {id:1,content:''},
+                {id:2,content:''},
+                {id:3,content:''},
+                {id:4,content:''},
+                {id:5,content:''},
+                {id:6,content:''},
+                {id:7,content:''},
+                {id:8,content:''},
+            ],
             history:[],
             winLines:[
                 [0, 1, 2],
@@ -49,7 +45,8 @@ export default {
                 [2, 4, 6]
           ],
           isWin:Array(9).fill(false),
-          stepNums:[]
+          stepNums:[],
+          gridInfo:{message:'',steps:[]}
         }
     },
     computed: {
@@ -61,8 +58,20 @@ export default {
             }
         }
     },
-
     methods: {
+        strike(cellId){
+             if(this.winner || this.gameboard[cellId].content) return;
+             this.gameboard[cellId].content = this.currentPlayer
+             this.history.push({id:cellId,content:this.currentPlayer})
+             this.calculateWinner()
+             if(!this.winner){
+                this.checkGameOver()
+             } 
+             this.moves++;
+             this.changePlayer()
+              this.stepNums.push(this.moves)
+             this.$emit('gridInfo', {message:this.turnMessage,steps:this.stepNums})
+        },
         changePlayer () {
             if(!this.winner){
                 this.currentPlayer = this.nonCurrentPlayer
@@ -70,66 +79,61 @@ export default {
             }
         },
         calculateWinner () {
+            debugger
             this.winLines.forEach(element => {
                 let [cell1,cell2,cell3] = element;
                 let gameboard = this.gameboard;
                 const curPlayer = this.currentPlayer;
-                if(gameboard[cell1] === curPlayer && gameboard[cell2] === curPlayer && gameboard[cell3] === curPlayer ){
+                if(gameboard[cell1].content === curPlayer && gameboard[cell2].content === curPlayer && gameboard[cell3].content === curPlayer ){
                     this.winner = this.currentPlayer
                     this.turnMessage = `Winner : ${this.currentPlayer}`
                     this.$set(this.isWin,cell1,true)
                     this.$set(this.isWin,cell2,true)
                     this.$set(this.isWin,cell3,true)
-                    Bus.$emit('freeze')
                 }
             });
         },
         checkGameOver(){
+            debugger
             if(this.moves > 7){
                 alert('game over!')
             }
-        }
-    },
-    created () {
-        Bus.$on('strike',(cellName) => {
-            debugger
-            this.gameboard[cellName] = this.currentPlayer
-            this.history.push({id:cellName,content:this.currentPlayer})
-            this.calculateWinner()
-            if(!this.winner){
-               this.checkGameOver()
-            } 
-            this.moves++;
-            this.changePlayer()
-            Bus.$emit('message', this.turnMessage)
-            this.stepNums.push(this.moves)
-            Bus.$emit('stepNum',this.stepNums)
-        })
-
-        Bus.$on('jumptoStep', (step) => {
+        },
+        jumpToStep(step){
+          debugger
           this.isWin = Array(9).fill(false);
           this.winner = '';
+          this.gameboard = [
+                {id:0,content:''},
+                {id:1,content:''},
+                {id:2,content:''},
+                {id:3,content:''},
+                {id:4,content:''},
+                {id:5,content:''},
+                {id:6,content:''},
+                {id:7,content:''},
+                {id:8,content:''}]
           const history = this.history.slice(0,step);
           history.forEach( element => {
-              this.gameboard = {
-                  0: '', 1: '', 2: '',
-                  3: '', 4: '', 5: '',
-                  6: '', 7: '', 8: ''}
-              this.gameboard[element.id] = element.content
-          })
+              this.gameboard[element.id].content = element.content
+          });
           this.moves = step
           this.stepNums = this.stepNums.slice(0,step)
-          Bus.$emit('clearCell')
-          Bus.$emit('coverGrid',history);
-        })
-
-        Bus.$on('gridReset', () => {
-  		  Object.assign(this.$data, this.$options.data())
-  	    })
-    },
+        },
+        restart(){
+            Object.assign(this.$data, this.$options.data())
+            this.$emit("resetInfo");
+        }
+    }
 }
+
 </script>
-<style >
+<style>
+.header{
+  text-align: center;
+  margin: 15px 0;
+}
+
 .board-container {
     width: 500px;
     height: 500px;
@@ -142,11 +146,63 @@ export default {
     box-shadow: 3px 3px 3px 0px rgba(0,0,0,0.75);
 }
 
-table {
-    border-collapse:collapse;
+.board-cell {
+    width: calc(100% / 3);
+    height: calc(100% / 3); 
+    display: inline-block;
+    font-size: 40px;
+    text-align: center;
+    border: 2px solid #000;
+    padding: 20px;
+    vertical-align: top;
+    font-family: "Permanent Marker";
+    caret-color: rgba(0,0,0,0);
 }
 
- .winner {
+  .cell {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+ .winnerColor {
     background-color:#808080;
 }
+
+.reset {
+    text-align: center;
+    margin: 20px auto 0;
+}
+
+.replay-btn {
+      width: 25%;
+      padding: 10px 20px;
+      border: 2px solid #000;
+      border-radius: 5px;
+      outline: none;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      font-size: 16px;
+      margin-top: 12px;
+      word-spacing: 3px;
+      background-color: #fff;
+  }
+
+  .replay-btn:hover,
+  .replay-btn:active {
+    outline: none;
+    color: #fff;
+    background-color: #000;
+  }
+
+  @media only screen and (max-width: 767px) {
+    .board__cell {
+      font-size: 16px;
+      padding: 5px;
+    }
+  
+    .replay-btn {
+      width: 50%;
+    }
+  }
 </style>
