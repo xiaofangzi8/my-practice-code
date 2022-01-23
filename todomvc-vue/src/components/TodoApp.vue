@@ -42,7 +42,7 @@ export default {
         },
         getClearComplete(){
             //坑点
-            //父组件的值变化了，子组件的值一直不变，子组件调用watch监听
+            //父组件的值变化了，子组件调用watch监听
             this.todos = this.todos.filter( function(todo){
                  return !todo.completed;
             });

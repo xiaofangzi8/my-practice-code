@@ -5,7 +5,7 @@ import TodoList from "../components/TodoList"
 Vue.use(Router);
 
 const router = new Router({
-    //坑点 是routes 而不是 routers ！！！！！
+    //坑点 是routes 而不是 routers ！！！
     routes: [
         {
             path:'/',
