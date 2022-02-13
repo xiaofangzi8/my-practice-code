@@ -1,8 +1,8 @@
 <template>
   <div id="app" style="overflow:hidden;height:1200px">
-    <keep-alive>
+    <!-- <keep-alive> -->
      <router-view/>
-    </keep-alive>
+    <!-- </keep-alive> -->
   </div>
 </template>
 <script>

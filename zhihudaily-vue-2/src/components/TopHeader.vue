@@ -2,8 +2,8 @@
 <header class="headerBox">
     <div class="title">
         <div class="time">
-        <span>13</span>
-        <span>二月</span>
+        <span>{{date | day}}</span>
+        <span>{{date | month}}</span>
         </div>
         <h1>知乎日报</h1>
     </div>
@@ -15,6 +15,39 @@
 
 <script>
 export default {
+    props:[
+        "date"
+    ],
+    filters:{
+        month(val){
+            let dict = {
+            "1": "一月",
+            "2": "二月",
+            "3": "三月",
+            "4": "四月",
+            "5": "五月",
+            "6": "六月",
+            "7": "七月",
+            "8": "八月",
+            "9": "九月",
+            "10": "十月",
+            "11":"十一月",
+            "12":"十二月"
+            }
+            let month = val.substr(4,2);
+            if(month[0] == '0'){
+                month = month.slice(1);
+            }
+            return dict[month];
+        },
+        day(val){
+            let day = val.slice(-2)
+            if(day[0] == '0'){
+            day = val.slice(1);
+            }
+            return day;
+        }
+  },
 
 }
 </script>
@@ -42,7 +75,7 @@ export default {
 }
 
 .title h1 {
-    padding: 0 0.4rem;
+    padding: 0 1rem;
 }
 
 .time{

@@ -21,7 +21,6 @@ export default {
     },
     created(){
         let id = this.$route.params.id;
-        console.log(this.$route.params.id);
         getDeatil(id).then(res=>{
             this.item = res;
         })

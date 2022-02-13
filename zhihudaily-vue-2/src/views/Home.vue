@@ -1,6 +1,6 @@
 <template>
 <div class="homeBox" v-if="time">
-    <top-header></top-header>
+    <top-header :date="time"></top-header>
     <top-banner :bannerData="bannerList"></top-banner>
     <div class="infinite-list" v-infinite-scroll="loadMore" infinite-scroll-disabled="loading" infinite-scroll-distance="20" infinite-scroll-throttle-delay="500">
       <div>
@@ -37,8 +37,8 @@ export default {
         let {date,stories} = res;
         this.lastTime = date;
         this.storyList = this.storyList.concat(stories);
+        this.loading=false;
       })
-      this.loading=false;
     }
   },
   created(){
